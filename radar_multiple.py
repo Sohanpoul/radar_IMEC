@@ -201,7 +201,8 @@ def main():
 
         # write multiple rows
         writer1.writerows(b)
-
+#just checking how this works
+#ii dont know what iam doing
 
 if __name__ == '__main__':
     main()
