@@ -203,7 +203,7 @@ def main():
         writer1.writerows(b)
 #just checking how this works
 #ii dont know what iam doing
-
+#check three if it works
 if __name__ == '__main__':
     main()
 
