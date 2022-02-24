@@ -68,7 +68,7 @@ class radar_interface:
         payload_length = (0).to_bytes(4, byteorder='little')
         cmd_frame = header + payload_length
         self.sockTCP.send(cmd_frame)
-        resp_frame = recv_msg(sockTCP, msg_len, max_msg_size)
+        resp_frame = recv_msg(self.sockTCP, msg_len, max_msg_size)
         if resp_frame[8] != 0:
             print('Error: Command not acknowledged')
             sys.exit(1)
@@ -79,19 +79,19 @@ class radar_interface:
         max_range = (1).to_bytes(4, byteorder='little')
         cmd_frame = header + payload_length + max_range
         self.sockTCP.send(cmd_frame)
-        resp_frame = recv_msg(sockTCP, msg_len, max_msg_size)
+        resp_frame = recv_msg(self.sockTCP, msg_len, max_msg_size)
         if resp_frame[8] != 0:
             print('Error: Command not acknowledged')
             sys.exit(1)
 
     def start(self):
         # Enable PDAT and TDAT data
-
+        payload_length = (4).to_bytes(4, byteorder='little')
         header = bytes("RDOT", 'utf-8')
-        datarequest = (24).to_bytes(4, byteorder='little')
-        cmd_frame = header + payloadlength + datarequest
+        data_request = (24).to_bytes(4, byteorder='little')
+        cmd_frame = header + payload_length + data_request
         self.sockTCP.send(cmd_frame)
-        resp_frame = recv_msg(sockTCP, msg_len, max_msg_size)
+        resp_frame = recv_msg(self.sockTCP, msg_len, max_msg_size)
         array_dat = []
 
     def receive_data(self):
@@ -99,7 +99,7 @@ class radar_interface:
         pdat_data = []
         packageData, adr = self.sockUDP.recvfrom(packageLength)
         while packageData[0:4] != b'PDAT':  # do while header isn't expected header
-            packageData, adr = sockUDP.recvfrom(packageLength)
+            packageData, adr = self.sockUDP.recvfrom(packageLength)
         respLength = int.from_bytes(packageData[4:8], byteorder='little')  # get response length
         numberoftargets = round(respLength / 10)  # calculate number of detected targets
         packageData = packageData[8:len(packageData)]  # exclude header from data
