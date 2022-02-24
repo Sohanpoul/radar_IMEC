@@ -207,7 +207,7 @@ class radar_interface:
 
 def main():
     radar1 = radar_interface(TCP_IP_1)
-    radar2 = radar_interface(TCP_IP_2,UDP_PORT=1234)
+    radar2 = radar_interface(TCP_IP_2,UDP_PORT=4568)
     radar1.connect()
     radar2.connect()
 
