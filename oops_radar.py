@@ -4,6 +4,7 @@ import sys
 import math
 import csv
 from datetime import datetime
+import time
 
 def recv_msg(sock_tcp, msg_length, maximum_msg_size):
     resp_frame = bytearray(msg_length)
@@ -43,6 +44,7 @@ class radar_interface:
         self.TCP_IP = tcp_ip
         self.array_pdat = []
         self.array_tdat = []
+        self.time_gap = []
         UDP_IP = '192.168.100.1'
         self.UDP_PORT = UDP_PORT
         self.sockTCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -105,6 +107,7 @@ class radar_interface:
             packageData, adr = self.sockUDP.recvfrom(packageLength)
         respLength = int.from_bytes(packageData[4:8], byteorder='little')  # get response length
         numberoftargets = round(respLength / 10)  # calculate number of detected targets
+        print(numberoftargets)
         packageData = packageData[8:len(packageData)]  # exclude header from data
         pdat_data = packageData  # store data
         packageData, adr = self.sockUDP.recvfrom(packageLength)  # get data
@@ -206,44 +209,49 @@ class radar_interface:
     @threaded
     def loop(self):
         for ctr in range(10):
-            self.start()
-            self.array_dat.append(self.receive_data())
-            self.stop()
-
+            t1 = time.time()
+            self.receive_data()
+            t2 = time.time()
+            self.time_gap.append(t2-t1)
 
 def main():
-    #radar1 = radar_interface(TCP_IP_1, 4567)
+    radar1 = radar_interface(TCP_IP_1, 4567)
     radar2 = radar_interface(TCP_IP_2, 4660)
-    #radar1.connect()
-    #radar1.configure()
-    # radar1.start()
-    #print("connected 1")
+    radar1.connect()
+    radar1.configure()
+    radar1.start()
+    print("connected 1")
 
     radar2.connect()
     radar2.configure()
     radar2.start()
     print("connected 2")
 
-    # threads = []
-    # #threads.append(radar1.loop())
-    # threads.append(radar2.loop())
-    for ctr in range(10):
-
-        #radar1.receive_data()
-        print(ctr)
-        radar2.receive_data()
+    threads = []
+    threads.append(radar1.loop())
+    threads.append(radar2.loop())
+    # for ctr in range(10):
+    #     t1 = time.time()
+    #     radar1.receive_data()
+    #     t2 = time.time()
+    #     #print(ctr)
+    #     radar2.receive_data()
+    #     t3 = time.time()
+    #     print(t2-t1)
+    #     print(t3-t2)
+    #     print(t3-t1)
         
-        
-    # for thread in threads:
-    #     thread.join()
+    for thread in threads:
+        thread.join()
+    print(radar1.time_gap)
+    print(radar2.time_gap)
+    try:
+        radar1.stop()
+        radar1.disconnect()
+        print("Disconnected 1")
+    except:
+        print("Couldn't Stop radar 1")
 
-    # try:
-    #     radar1.stop()
-    #     radar1.disconnect()
-    #     print("Disconnected 1")
-    # except:
-    #     print("Couldn't Stop radar 1")
-    #
     try:
         radar2.stop()
         radar2.disconnect()
@@ -251,22 +259,23 @@ def main():
     except:
         print("Couldn't Stop radar 2")
 
-    # print("showing final 1")
-    #array_dat_1 = radar1.array_pdat
+    print("showing final 1")
+    array_dat_1 = radar1.array_pdat
+    print(array_dat_1)
     print("showing final 2")
-    array_dat_2 = radar2.array_tdat
+    array_dat_2 = radar2.array_pdat
     print(array_dat_2)
     header = ['time_stamp(sec)', 'target_ID', 'distance_tdat(cm)', 'speed_tdat[km/h × 100]',
               'azimuth_tdat[degree × 100]', 'elevation_tdat[degree× 100]', 'magnititude_tdat']
-    #with open('output1.csv', 'w', encoding='UTF8', newline='') as f:
-    #    writer = csv.writer(f)
+    with open('output1.csv', 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
 
-        # write the header
-    #    writer.writerow(header)
+        #write the header
+        writer.writerow(header)
 
-        # write multiple rows
-    #    writer.writerows(array_dat)
-    #    print("write complete1")
+        #write multiple rows
+        writer.writerows(array_dat_1)
+        print("write complete1")
     with open('output2.csv', 'w', encoding='UTF8', newline='') as f1:
         writer1 = csv.writer(f1)
 
