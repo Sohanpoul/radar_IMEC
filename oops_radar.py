@@ -1,3 +1,9 @@
+""" #VMD_3 radar # two sensors # Multithreading
+    Data Collection method from multiple sensor
+    before running this program please set port number 
+    ~developed by Sohan P Varghese- Cranfield University"""
+
+
 from threading import Thread
 import socket
 import sys
